@@ -16,7 +16,7 @@ This Flask application sets up a webhook endpoint (`/zap-webhook`) to receive da
 1. **Install Dependencies:**
 
    ```bash
-   pip install flask python-docx python-dotenv
+   pip install -r requirements.txt
    ```
 
 2. **Environment Variables:**
