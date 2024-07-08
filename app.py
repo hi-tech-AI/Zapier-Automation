@@ -2,6 +2,10 @@ from flask import Flask, request, jsonify
 import json
 from docx import Document
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+
+document_name = os.getenv("DOCUMENT_NAME")
 
 app = Flask(__name__)
 
@@ -176,7 +180,7 @@ def find_data(json_data, date):
 
 def replace_data(personal_data):
     # Purchase Agreement.docx
-    doc = Document('Purchase Agreement.docx')
+    doc = Document(document_name)
 
     for key, value in personal_data[0].items():
         replace_word_in_paragraphs(doc.paragraphs, key, value)
