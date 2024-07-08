@@ -1,12 +1,9 @@
 from flask import Flask, request, jsonify
 import json
 from docx import Document
-from docx.shared import Inches
 from datetime import datetime
 
 app = Flask(__name__)
-
-# Zapier Webhook URL : https://skilled-albacore-indirectly.ngrok-free.app
 
 counter = 1
 
