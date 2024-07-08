@@ -127,9 +127,7 @@ def find_data(json_data, date):
     print(f'<Loan_Date> ---> {loan_date}')
 
     today = datetime.today()
-    date_str = today.strftime("%Y-%m-%d")
-    today_as_date = datetime.strptime(date_str, "%Y-%m-%d")
-    case_id = today_as_date.strftime("%m%d%y") + str(f"{counter:02}")
+    case_id = today.strftime("%m%d%y") + str(f"{counter:02}")
     print(f'<Case_ID> ---> {case_id}')
 
     loan_amount = json_data['amount']
