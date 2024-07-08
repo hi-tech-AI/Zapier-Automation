@@ -19,7 +19,7 @@ def webhook():
             json.dump(data, file, indent=4)
         
         json_data = extract_data(data["body"])
-        personal_data = find_data(json_data[0])
+        personal_data = find_data(json_data[0], data["date"])
         replace_data(personal_data)
         
         # Optionally, send a response back to Zapier
@@ -98,7 +98,7 @@ def replace_word_in_tables(tables, old_word, new_word):
             for cell in row.cells:
                 replace_word_in_paragraphs(cell.paragraphs, old_word, new_word)
 
-def find_data(json_data):
+def find_data(json_data, date):
     personal_data = []
 
     client_name = json_data['first_name'] + ' ' + json_data['last_name']
@@ -116,7 +116,8 @@ def find_data(json_data):
     firm_address = json_data['attorney_email']
     print(f'<Lawyer_Email> ---> {firm_address}')
 
-    loan_date = ""
+    date_obj = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %z")
+    loan_date = date_obj.strftime("%m/%d/%Y")
     print(f'<Loan_Date> ---> {loan_date}')
 
     today = datetime.today()
