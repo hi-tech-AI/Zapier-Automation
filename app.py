@@ -16,25 +16,27 @@ def webhook():
     data = request.json
     if data:
         global counter
-        # Process the received data
+
         print(f'Received data: {data}')
 
         with open("webhook.json", "w") as file:
             json.dump(data, file, indent=4)
         
         json_data = extract_data(data["body"])
-        personal_data = find_data(json_data[0], data["date"])
-        replace_data(personal_data)
+        if json_data == "Not found message":
+            return jsonify({"status": "failure", "message": "No data received"}), 400
+        else:
+            personal_data = find_data(json_data[0], data["date"])
+            replace_data(personal_data)
         
-        # Optionally, send a response back to Zapier
-        response = {
-            "status": "success",
-            "message": "Data received successfully!"
-        }
+            response = {
+                "status": "success",
+                "message": "Data received successfully!"
+            }
 
-        counter += 1
+            counter += 1
 
-        return jsonify(response), 200
+            return jsonify(response), 200
     else:
         return jsonify({"status": "failure", "message": "No data received"}), 400
 
