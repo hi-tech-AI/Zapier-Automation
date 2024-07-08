@@ -20,8 +20,9 @@ def webhook():
 
         with open("webhook.json", "w") as file:
             json.dump(data, file, indent=4)
-
-        personal_data = find_data(data)
+        
+        json_data = extract_data(data["body"])
+        personal_data = find_data(json_data[0])
         replace_data(personal_data)
         
         # Optionally, send a response back to Zapier
@@ -32,6 +33,67 @@ def webhook():
         return jsonify(response), 200
     else:
         return jsonify({"status": "failure", "message": "No data received"}), 400
+
+def extract_data(text):
+    final_data = []
+    if text:
+        splited_texts = text.split("\n\n")
+        first_name = splited_texts[0].split(": ")[1]
+        last_name = splited_texts[1].split(": ")[1]
+        address = splited_texts[2].split(": ")[1]
+        city = splited_texts[3].split(": ")[1]
+        state = splited_texts[4].split(": ")[1]
+        zip = splited_texts[5].split(": ")[1]
+        home_phone = splited_texts[6].split(": ")[1]
+        cell_phone = splited_texts[7].split(": ")[1]
+        email = splited_texts[8].split(": ")[1]
+        agreed = splited_texts[9]
+        emergency_name = splited_texts[10].split(": ")[1]
+        emergency_phone = splited_texts[11].split(": ")[1]
+        case_state = splited_texts[12].split(": ")[1]
+        case_type = splited_texts[13].split(": ")[1]
+        state = splited_texts[4].split(": ")[1]
+        zip = splited_texts[5].split(": ")[1]
+        home_phone = splited_texts[6].split(": ")[1]
+        cell_phone = splited_texts[7].split(": ")[1]
+        email = splited_texts[8].split(": ")[1]
+        agreed = splited_texts[9]
+        emergency_name = splited_texts[10].split(": ")[1]
+        emergency_phone = splited_texts[11].split(": ")[1]
+        case_state = splited_texts[12].split(": ")[1]
+        case_type = splited_texts[13].split(": ")[1]
+        firm_name = splited_texts[14].split(": ")[1]
+        attorney_name = splited_texts[15].split(": ")[1]
+        attorney_phone = splited_texts[16].split(": ")[1]
+        amount = splited_texts[17].split(": ")[1]
+        payment_method = splited_texts[18].split(": ")[1]
+        description = splited_texts[19].split(": ")[1]
+
+        final_data.append({
+            "first_name": first_name,
+            "last_name": last_name,
+            "address": address,
+            "city": city,
+            "state": state,
+            "zip": zip,
+            "home_phone": home_phone,
+            "cell_phone": cell_phone,
+            "email": email,
+            "agreed": agreed,
+            "emergency_name": emergency_name,
+            "emergency_phone": emergency_phone,
+            "case_state": case_state,
+            "case_type": case_type,
+            "firm_name": firm_name,
+            "attorney_name": attorney_name,
+            "attorney_phone": attorney_phone,
+            "amount": amount,
+            "payment_method": payment_method,
+            "description": description
+        })
+        return final_data
+    else:
+        return "Not found message"
 
 def replace_word_in_paragraphs(paragraphs, old_word, new_word):
     for para in paragraphs:
