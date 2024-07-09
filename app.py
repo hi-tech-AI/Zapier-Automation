@@ -7,7 +7,8 @@ import os
 
 load_dotenv()
 
-document_name = os.getenv("DOCUMENT_NAME")
+document_option1 = os.getenv("DOCUMENT_NAME_OPTION1")
+document_option2 = os.getenv("DOCUMENT_NAME_OPTION2")
 
 app = Flask(__name__)
 
@@ -36,7 +37,7 @@ def webhook():
             return jsonify({"status": "failure", "message": "No data received"}), 400
         else:
             personal_data, prev_date = find_data(json_data[0], data["date"])
-            replace_data(personal_data)
+            replace_data(personal_data, json_data[0]['payment_method'])
         
             response = {
                 "status": "success",
@@ -187,9 +188,11 @@ def find_data(json_data, date):
 
     return personal_data, today.strftime("%m%d%y")
 
-def replace_data(personal_data):
-    # Purchase Agreement.docx
-    doc = Document(document_name)
+def replace_data(personal_data, payment_method):
+    if "Zelle" in payment_method:
+        doc = Document(document_option1)
+    else:
+        doc = Document(document_option2)
 
     for key, value in personal_data[0].items():
         replace_word_in_paragraphs(doc.paragraphs, key, value)
