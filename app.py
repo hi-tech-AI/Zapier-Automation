@@ -5,6 +5,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 
+load_dotenv()
+
 document_name = os.getenv("DOCUMENT_NAME")
 
 app = Flask(__name__)
