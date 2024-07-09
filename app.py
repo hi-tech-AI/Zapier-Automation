@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import json
 from docx import Document
+from docx.shared import Pt
 from datetime import datetime
 from dotenv import load_dotenv
 import os
@@ -38,7 +39,7 @@ def webhook():
         else:
             personal_data, prev_date = find_data(json_data[0], data["date"])
             replace_data(personal_data, json_data[0]['payment_method'])
-        
+
             response = {
                 "status": "success",
                 "message": "Data received successfully!"
@@ -107,12 +108,16 @@ def replace_word_in_paragraphs(paragraphs, old_word, new_word):
     for para in paragraphs:
         if old_word in para.text:
             para.text = para.text.replace(old_word, new_word)
+            for run in para.runs:
+                run.font.size = Pt(11)
 
 def replace_word_in_tables(tables, old_word, new_word):
     for table in tables:
         for row in table.rows:
             for cell in row.cells:
-                replace_word_in_paragraphs(cell.paragraphs, old_word, new_word)
+                for paragraph in cell.paragraphs:
+                    if old_word in paragraph.text:
+                        paragraph.text = paragraph.text.replace(old_word, new_word)
 
 def find_data(json_data, date):
     personal_data = []
@@ -197,7 +202,12 @@ def replace_data(personal_data, payment_method):
     for key, value in personal_data[0].items():
         replace_word_in_paragraphs(doc.paragraphs, key, value)
         replace_word_in_tables(doc.tables, key, value)
-    
+
+    for paragraph in doc.paragraphs:
+        if f"Seller: {personal_data[0]['<Client_Name>']}" in paragraph.text or f"Purchase Price: ${personal_data[0]['<Loan_Amount>']}" in paragraph.text or f"Advance Amount Due to Seller: ${personal_data[0]['<Loan_Amount>']}" in paragraph.text:
+            for run in paragraph.runs:
+                run.font.size = Pt(12)
+
     doc.save(f"{personal_data[0]["<Client_Name>"]}.docx")
     print(f"Words replaced and saved to {personal_data[0]["<Client_Name>"]}.docx")
 
