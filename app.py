@@ -10,23 +10,30 @@ document_name = os.getenv("DOCUMENT_NAME")
 app = Flask(__name__)
 
 counter = 1
+prev_date = ""
 
 @app.route('/zap-webhook', methods=['POST'])
 def webhook():
     data = request.json
     if data:
         global counter
+        global prev_date
 
         print(f'Received data: {data}')
 
         with open("webhook.json", "w") as file:
             json.dump(data, file, indent=4)
+
+        if datetime.today().strftime("%m%d%y") == prev_date:
+            pass
+        else:
+            counter = 1
         
         json_data = extract_data(data["body"])
         if json_data == "Not found message":
             return jsonify({"status": "failure", "message": "No data received"}), 400
         else:
-            personal_data = find_data(json_data[0], data["date"])
+            personal_data, prev_date = find_data(json_data[0], data["date"])
             replace_data(personal_data)
         
             response = {
@@ -176,7 +183,7 @@ def find_data(json_data, date):
         "<Client_CityState>" : client_citystate
     })
 
-    return personal_data
+    return personal_data, today.strftime("%m%d%y")
 
 def replace_data(personal_data):
     # Purchase Agreement.docx
