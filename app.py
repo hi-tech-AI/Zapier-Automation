@@ -157,16 +157,17 @@ def find_data(json_data, date):
     client_phone = json_data['home_phone']
     print(f'<Client_Phone> ---> {client_phone}')
 
-    q1_interest = int(int(json_data['amount']) * 1.15)
+    
+    q1_interest = int(round(int(json_data['amount']) * 1.15, 2))
     print(f'<Q1_Interest> ---> {q1_interest}')
 
-    q2_interest = int(int(json_data['amount']) * 1.3)
+    q2_interest = int(round(int(json_data['amount']) * 1.3, 2))
     print(f'<Q2_Interest> ---> {q2_interest}')
 
-    q3_interest = int(int(json_data['amount']) * 1.45)
+    q3_interest = int(round(int(json_data['amount']) * 1.45, 2))
     print(f'<Q3_Interest> ---> {q3_interest}')
 
-    q4_interest = int(int(json_data['amount']) * 1.6)
+    q4_interest = int(round(int(json_data['amount']) * 1.6, 2))
     print(f'<Q4_Interest> ---> {q4_interest}')
 
     client_street = json_data['address']
