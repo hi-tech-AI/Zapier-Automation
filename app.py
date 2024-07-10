@@ -1,15 +1,17 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify
-import json
+from datetime import datetime
 from docx import Document
 from docx.shared import Pt
-from datetime import datetime
-from dotenv import load_dotenv
-import os
+import convertapi
+import json
 
 load_dotenv()
 
 document_option1 = os.getenv("DOCUMENT_NAME_OPTION1")
 document_option2 = os.getenv("DOCUMENT_NAME_OPTION2")
+convertapi_secret_key = os.getenv("CONVERTAPI_SECRET_KEY")
 
 app = Flask(__name__)
 
@@ -38,7 +40,8 @@ def webhook():
             return jsonify({"status": "failure", "message": "No data received"}), 400
         else:
             personal_data, prev_date = find_data(json_data[0], data["date"])
-            replace_data(personal_data, json_data[0]['payment_method'])
+            doc_file = replace_data(personal_data, json_data[0]['payment_method'])
+            convert_pdf(doc_file)
 
             response = {
                 "status": "success",
@@ -208,8 +211,17 @@ def replace_data(personal_data, payment_method):
             for run in paragraph.runs:
                 run.font.size = Pt(12)
 
-    doc.save(f"{personal_data[0]["<Client_Name>"]}.docx")
+    output_file = f"{personal_data[0]["<Client_Name>"]}.docx"
+    doc.save(output_file)
     print(f"Words replaced and saved to {personal_data[0]["<Client_Name>"]}.docx")
+    
+    return output_file
+
+def convert_pdf(file_path):
+    convertapi.api_secret = convertapi_secret_key
+    convertapi.convert('pdf', {
+        'File': file_path
+    }, from_format = 'doc').save_files(file_path.split('.')[0] + '.pdf')
 
 if __name__ == '__main__':
     app.run(port=5002, debug=True)
