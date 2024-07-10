@@ -223,6 +223,7 @@ def convert_pdf(file_path):
     convertapi.convert('pdf', {
         'File': file_path
     }, from_format = 'doc').save_files(file_path.split('.')[0] + '.pdf')
+    os.remove(file_path)
 
 if __name__ == '__main__':
     app.run(port=5002, debug=True)
