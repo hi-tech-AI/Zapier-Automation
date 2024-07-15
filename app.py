@@ -6,6 +6,7 @@ from docx import Document
 from docx.shared import Pt
 import convertapi
 import json
+from signature import *
 
 load_dotenv()
 
@@ -41,7 +42,8 @@ def webhook():
         else:
             personal_data, prev_date = find_data(json_data[0], data["date"])
             doc_file = replace_data(personal_data, json_data[0]['payment_method'])
-            convert_pdf(doc_file)
+            pdf_file = convert_pdf(doc_file)
+            boldsign(pdf_file, personal_data)
 
             response = {
                 "status": "success",
@@ -219,11 +221,13 @@ def replace_data(personal_data, payment_method):
     return output_file
 
 def convert_pdf(file_path):
+    pdf_file = file_path.split('.')[0] + '.pdf'
     convertapi.api_secret = convertapi_secret_key
     convertapi.convert('pdf', {
         'File': file_path
-    }, from_format = 'doc').save_files(file_path.split('.')[0] + '.pdf')
+    }, from_format = 'doc').save_files(pdf_file)
     os.remove(file_path)
+    return pdf_file
 
 if __name__ == '__main__':
     app.run(port=5002, debug=True)
