@@ -42,8 +42,8 @@ def webhook():
         else:
             personal_data, prev_date = find_data(json_data[0], data["date"])
             doc_file = replace_data(personal_data, json_data[0]['payment_method'])
-            pdf_file = convert_pdf(doc_file)
-            boldsign(pdf_file, personal_data)
+            convert_pdf(doc_file)
+            boldsign(personal_data, json_data[0]['payment_method'])
 
             response = {
                 "status": "success",
