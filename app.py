@@ -28,22 +28,35 @@ def webhook():
 
         print(f'Received data: {data}')
 
-        with open("webhook.json", "w") as file:
-            json.dump(data, file, indent=4)
-
         if datetime.today().strftime("%m%d%y") == prev_date:
             pass
         else:
             counter = 1
         
         json_data = extract_data(data["body"])
+
         if json_data == "Not found message":
             return jsonify({"status": "failure", "message": "No data received"}), 400
         else:
-            personal_data, prev_date = find_data(json_data[0], data["date"])
-            doc_file = replace_data(personal_data, json_data[0]['payment_method'])
-            pdf_file = convert_pdf(doc_file)
-            boldsign(personal_data, json_data[0]['payment_method'], pdf_file)
+            personal_data, prev_date, case_id = find_data(json_data[0], data["date"])
+
+            save_path = "saved_data/" + case_id
+            os.makedirs(save_path, exist_ok=True)
+            
+            with open(save_path + "/initial.json", "w") as file:
+                json.dump(data, file, indent=4)
+
+            with open(save_path + "/extracted.json", "w") as file:
+                json.dump(json_data, file, indent=4)
+
+            with open(save_path + "/final.json", "w") as file:
+                json.dump(personal_data, file, indent=4)
+
+            doc_file = replace_data(personal_data, json_data[0]['payment_method'], save_path)
+            pdf_file_path = convert_pdf(doc_file)
+            print("Start BoldSign process...")
+            sleep(3)
+            boldsign(personal_data, json_data[0]['payment_method'], pdf_file_path)
 
             response = {
                 "status": "success",
@@ -78,7 +91,7 @@ def extract_data(text):
         attorney_name = splited_texts[15].split(": ")[1]
         attorney_phone = splited_texts[16].split(": ")[1]
         attorney_email = splited_texts[17].split(": ")[1]
-        amount = splited_texts[18].split(": ")[1]
+        amount = splited_texts[18].split(": ")[1].replace(',', '')
         payment_method = splited_texts[19].split(": ")[1]
         description = splited_texts[20].split(": ")[1]
 
@@ -158,7 +171,6 @@ def find_data(json_data, date):
 
     client_phone = json_data['home_phone']
     print(f'<Client_Phone> ---> {client_phone}')
-
     
     q1_interest = int(round(int(json_data['amount']) * 1.15, 2))
     print(f'<Q1_Interest> ---> {q1_interest}')
@@ -197,9 +209,9 @@ def find_data(json_data, date):
         "<Client_CityState>" : client_citystate
     })
 
-    return personal_data, today.strftime("%m%d%y")
+    return personal_data, today.strftime("%m%d%y"), case_id
 
-def replace_data(personal_data, payment_method):
+def replace_data(personal_data, payment_method, save_path):
     if "Zelle" in payment_method:
         doc = Document(document_option1)
     else:
@@ -214,20 +226,20 @@ def replace_data(personal_data, payment_method):
             for run in paragraph.runs:
                 run.font.size = Pt(12)
 
-    output_file = f"{personal_data[0]["<Client_Name>"]}.docx"
+    output_file = f"{save_path}/{personal_data[0]["<Client_Name>"]}.docx"
     doc.save(output_file)
     print(f"Words replaced and saved to {personal_data[0]["<Client_Name>"]}.docx")
     
     return output_file
 
 def convert_pdf(file_path):
-    pdf_file = file_path.split('.')[0] + '.pdf'
+    pdf_file_path = file_path.split('.')[0] + '.pdf'
     convertapi.api_secret = convertapi_secret_key
     convertapi.convert('pdf', {
         'File': file_path
-    }, from_format = 'doc').save_files(pdf_file)
-    os.remove(file_path)
-    return pdf_file
+    }, from_format = 'doc').save_files(pdf_file_path)
+    # os.remove(file_path)
+    return pdf_file_path
 
 if __name__ == '__main__':
     app.run(port=5002, debug=True)

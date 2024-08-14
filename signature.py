@@ -16,10 +16,10 @@ def Send_Keys(element : WebElement, content : str):
 def Click(x, y):
     pyautogui.moveTo(x, y)
     sleep(1)
-    pyautogui.doubleClick(x, y)
+    pyautogui.leftClick(x, y)
     sleep(1)
 
-def boldsign(personal_data, payment_method, pdf_file):
+def boldsign(personal_data, payment_method, pdf_file_path):
     client_name = personal_data[0]['<Client_Name>']
     client_email = personal_data[0]['<Client_Email>']
     attorney_name = personal_data[0]['<Lawyer_Name>']
@@ -32,12 +32,12 @@ def boldsign(personal_data, payment_method, pdf_file):
 
     driver.get('https://app.boldsign.com/document/new')
     
-    sleep(2)
+    sleep(5)
     
     # Click template selection button
     template_button = driver.find_element(By.ID, 'templateButton')
     driver.execute_script("arguments[0].click();", template_button)
-    sleep(2)
+    sleep(3)
 
     # Choose template
     if payment_method == "Zelle (instant)":
@@ -54,9 +54,8 @@ def boldsign(personal_data, payment_method, pdf_file):
     driver.execute_script('arguments[0].click();', use_button)
     sleep(10)
 
-    Click(1365, 575)
-    pyautogui.typewrite(pdf_file)
-    sleep(0.5)
+    Click(1600, 535)
+    pyautogui.typewrite(pdf_file_path)
     pyautogui.press('enter')
     sleep(10)
 
@@ -65,6 +64,7 @@ def boldsign(personal_data, payment_method, pdf_file):
     sleep(1)
 
     input_client_email = driver.find_elements(By.CLASS_NAME, 'bs-signer-email')[0].find_element(By.TAG_NAME, 'input')
+    input_client_email.clear()
     Send_Keys(input_client_email, client_email)
     sleep(1)
 
@@ -73,10 +73,12 @@ def boldsign(personal_data, payment_method, pdf_file):
     sleep(1)
 
     input_attorney_email = driver.find_elements(By.CLASS_NAME, 'bs-signer-email')[1].find_element(By.TAG_NAME, 'input')
+    input_attorney_email.clear()
     Send_Keys(input_attorney_email, attorney_email)
     sleep(2)
 
     driver.get('https://app.boldsign.com/document/prepare')
+    sleep(0.5)
     pyautogui.press('enter')
     sleep(10)
 
@@ -89,3 +91,7 @@ def boldsign(personal_data, payment_method, pdf_file):
     driver.delete_all_cookies()
 
     driver.get('https://app.boldsign.com/dashboard')
+
+if __name__ == "__main__":
+    sleep(5)
+    Click(1600, 535)
