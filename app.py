@@ -52,7 +52,7 @@ def webhook():
             with open(save_path + "/final.json", "w") as file:
                 json.dump(personal_data, file, indent=4)
 
-            doc_file = replace_data(personal_data, json_data[0]['payment_method'], save_path)
+            doc_file = replace_data(personal_data, json_data[0]['payment_method'])
             pdf_file_path = convert_pdf(doc_file)
             print("Start BoldSign process...")
             sleep(3)
@@ -163,7 +163,7 @@ def find_data(json_data, date):
     case_id = today.strftime("%m%d%y") + str(f"{counter:02}")
     print(f'<Case_ID> ---> {case_id}')
 
-    loan_amount = json_data['amount']
+    loan_amount = json_data['amount'].replace(".00", "")
     print(f'<Loan_Amount> ---> {loan_amount}')
 
     handling_fee = "0"
@@ -172,16 +172,16 @@ def find_data(json_data, date):
     client_phone = json_data['home_phone']
     print(f'<Client_Phone> ---> {client_phone}')
     
-    q1_interest = int(round(int(json_data['amount']) * 1.15, 2))
+    q1_interest = int(round(int(json_data['amount'].replace(".00", "")) * 1.15, 2))
     print(f'<Q1_Interest> ---> {q1_interest}')
 
-    q2_interest = int(round(int(json_data['amount']) * 1.3, 2))
+    q2_interest = int(round(int(json_data['amount'].replace(".00", "")) * 1.3, 2))
     print(f'<Q2_Interest> ---> {q2_interest}')
 
-    q3_interest = int(round(int(json_data['amount']) * 1.45, 2))
+    q3_interest = int(round(int(json_data['amount'].replace(".00", "")) * 1.45, 2))
     print(f'<Q3_Interest> ---> {q3_interest}')
 
-    q4_interest = int(round(int(json_data['amount']) * 1.6, 2))
+    q4_interest = int(round(int(json_data['amount'].replace(".00", "")) * 1.6, 2))
     print(f'<Q4_Interest> ---> {q4_interest}')
 
     client_street = json_data['address']
@@ -211,7 +211,7 @@ def find_data(json_data, date):
 
     return personal_data, today.strftime("%m%d%y"), case_id
 
-def replace_data(personal_data, payment_method, save_path):
+def replace_data(personal_data, payment_method):
     if "Zelle" in payment_method:
         doc = Document(document_option1)
     else:
@@ -226,7 +226,7 @@ def replace_data(personal_data, payment_method, save_path):
             for run in paragraph.runs:
                 run.font.size = Pt(12)
 
-    output_file = f"{save_path}/{personal_data[0]["<Client_Name>"]}.docx"
+    output_file = f"{personal_data[0]["<Client_Name>"]}.docx"
     doc.save(output_file)
     print(f"Words replaced and saved to {personal_data[0]["<Client_Name>"]}.docx")
     
