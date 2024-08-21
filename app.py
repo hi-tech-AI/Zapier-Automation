@@ -7,6 +7,7 @@ from docx.shared import Pt
 import convertapi
 import json
 from signature import *
+import shutil
 
 load_dotenv()
 
@@ -52,11 +53,13 @@ def webhook():
             with open(save_path + "/final.json", "w") as file:
                 json.dump(personal_data, file, indent=4)
 
-            doc_file = replace_data(personal_data, json_data[0]['payment_method'])
+            doc_file = replace_data(personal_data, json_data[0]['payment_method'], save_path)
             pdf_file_path = convert_pdf(doc_file)
+            shutil.copy2(pdf_file_path, pdf_file_path.split('/')[-1])
+
             print("Start BoldSign process...")
-            sleep(3)
-            boldsign(personal_data, json_data[0]['payment_method'], pdf_file_path)
+            sleep(10)
+            # boldsign(personal_data, json_data[0]['payment_method'], pdf_file_path)
 
             response = {
                 "status": "success",
@@ -211,7 +214,7 @@ def find_data(json_data, date):
 
     return personal_data, today.strftime("%m%d%y"), case_id
 
-def replace_data(personal_data, payment_method):
+def replace_data(personal_data, payment_method, save_path):
     if "Zelle" in payment_method:
         doc = Document(document_option1)
     else:
@@ -226,7 +229,7 @@ def replace_data(personal_data, payment_method):
             for run in paragraph.runs:
                 run.font.size = Pt(12)
 
-    output_file = f"{personal_data[0]["<Client_Name>"]}.docx"
+    output_file = f"{save_path}/{personal_data[0]["<Client_Name>"]}.docx"
     doc.save(output_file)
     print(f"Words replaced and saved to {personal_data[0]["<Client_Name>"]}.docx")
     
@@ -238,7 +241,8 @@ def convert_pdf(file_path):
     convertapi.convert('pdf', {
         'File': file_path
     }, from_format = 'doc').save_files(pdf_file_path)
-    # os.remove(file_path)
+
+    print('PDF file is generated.')
     return pdf_file_path
 
 if __name__ == '__main__':
